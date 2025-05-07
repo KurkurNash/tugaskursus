@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List with Local Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            user-select: none;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+		li {
+            display: flex;
+            align-items: stretch;
+            margin-bottom: 10px;
+        }
+        .task-time, .task-text, .remove-btn {
+            height: 50px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            background: yellowgreen;
+            padding: 0 10px;
+            box-sizing: border-box;
+            font-size: 1.1em;
+        }
+        .task-time {
+            flex: 0 0 60px;
+        }
+        .task-text {
+            flex: 1;
+            margin: 0 5px;
+            background: yellowgreen;
+        }
+        .remove-btn {
+            background: crimson;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            flex: 0 0 50px;
+            cursor: pointer;
+        }
+        .remove-btn img {
+            width: 22px;
+            height: 22px;
+        }
+    </style>
+</head>
+<body>
+    <h1>To-Do List</h1>
+    <input type="time" id="timeInput">
+    <input type="text" id="taskInput" placeholder="Add a new task" />
+    <button id="addTask">Add Task</button>
+    <ul id="taskList"></ul>
+
+    <script>
+        const timeInput = document.getElementById('timeInput');
+        const taskInput = document.getElementById('taskInput');
+        const addTaskButton = document.getElementById('addTask');
+        const taskList = document.getElementById('taskList');
+
+        // Save tasks to local storage
+        function saveTasks() {
+            const tasks = Array.from(taskList.children).map(item => {
+                const taskText = item.querySelector('.task-text').textContent; // Get task text
+                const taskTime = item.querySelector('.task-time').textContent; // Get task time
+                return { text: taskText, time: taskTime }; // Save both text and time
+            });
+            localStorage.setItem('tasks', JSON.stringify(tasks)); // Store tasks in localStorage
+        }
+
+        // Load tasks from local storage
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.sort((a, b) => a.time.localeCompare(b.time));
+            tasks.forEach(task => addTaskToDOM(task.text, task.time));
+        }
+
+        // Add task event
+        addTaskButton.onclick = () => {
+            const task = taskInput.value.trim();
+            const time = timeInput.value.trim();
+            if (task && time) {
+                addTaskToDOM((task[0].toUpperCase() + task.slice(1)), time); // Add the task with the time
+                saveTasks(); // Save to localStorage
+                taskInput.value = ''; // Clear input
+                timeInput.value = ''; // Clear time input
+                taskList.innerHTML = '';
+                loadTasks();
+            }
+        };
+
+        // Add task to DOM
+        function addTaskToDOM(taskText, taskTime) {
+            const li = document.createElement('li');
+			
+			//Create time box
+			const timeBox = document.createElement('div');
+			timeBox.textContent = taskTime;
+			timeBox.classList.add('task-time');
+			
+			//Create text box
+			const textBox = document.createElement('div');
+			textBox.textContent = taskText;
+			textBox.classList.add('task-text');
+
+            //Create remove box
+            const removeBtn = document.createElement('button');
+            removeBtn.classList.add('remove-btn');
+                //Create img remove btn
+                const imgRemoveBtn = document.createElement('img');
+                imgRemoveBtn.src = 'https://cdn3.iconfinder.com/data/icons/objects/512/Bin-512.png';
+                removeBtn.appendChild(imgRemoveBtn);
+
+            removeBtn.onclick = () => {
+                li.remove();
+                saveTasks();
+            }
+            
+            // Append elements to the li
+			li.appendChild(timeBox);
+			li.appendChild(textBox);
+            li.appendChild(removeBtn);
+			
+            // Append li to the task list
+            taskList.appendChild(li);
+        }
+
+        // Initialize
+        loadTasks(); // Load tasks when the page loads
+    </script>
+</body>
+</html>
