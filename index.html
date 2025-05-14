@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List with Local Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 50%;
+            margin: auto;
+            background-image: url('https://github.com/EnokhIovan/nyubaRek/blob/main/clasroomImg.jpg?raw=true');
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: white;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            display: flex;
+            align-items: stretch;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-shadow: 0 0 4px gray;
+        }
+        .task-time, .task-text, .remove-btn {
+            height: 50px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            background: yellowgreen;
+            padding: 0 10px;
+            box-sizing: border-box;
+            font-size: 1.1em;
+        }
+        .task-time {
+            flex: 0 0 60px;
+        }
+        .task-text {
+            flex: 1;
+            margin: 0 5px;
+            background: yellowgreen;
+        }
+        button {
+            background: green;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .remove-btn {
+            background: crimson;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            flex: 0 0 50px;
+            cursor: pointer;
+        }
+        .remove-btn img {
+            width: 22px;
+            height: 22px;
+        }
+        header {
+            background-color: rgba(0, 0, 0, 0.75);
+            border-bottom: 2px solid white;
+            padding: 8px;
+            text-align: center;
+            display: flex;
+            
+        }
+        header h1,
+        header p{
+            margin: 0;
+            margin-top: 8px;
+        }
+        header p {
+            font-weight: bold;
+        }
+        header img {
+            width: 100%;
+        }
+        header .forImag {
+            background-color: rgba(35, 35, 35, 0.6);
+            flex: 2;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            border-radius: 8px;
+        }
+        header .forText {
+            background-color: rgba(0, 206, 209, 0.25);
+            border-radius: 8px;
+            flex: 8;
+            height: 100%;
+            text-align: left;
+            padding-left: 12px;
+            margin-left: 8px;
+        }
+        main {
+            background-color: rgba(0, 0, 0, 0.5);
+            flex: 1; 
+            padding: 20px;
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: 0 0 8px gray;
+        }
+        main::-webkit-scrollbar{
+            width: 10px;
+        }
+        main::-webkit-scrollbar-track{
+            background-color: rgba(173, 255, 47, 0.2);
+            border-radius: 8px;
+        }
+        main::-webkit-scrollbar-thumb{
+            background-color: rgba(0, 206, 209, 0.6);
+            border-radius: 4px;
+        }
+        footer {
+            background-color: rgba(127, 255, 212, 0.4);
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="forImag">
+            <img src="https://img.favpng.com/10/25/12/garden-roses-rose-garden-rose-bowl-logo-png-favpng-G4918dsiTvni07TxrhpgsB4gp.jpg">
+        </div>
+        <div class="forText">
+            <h1>To-Do List</h1>
+            <p id="textHeader">Visi Voeja Misi Voeja Misivsi Foavowa</p>
+        </div>
+    </header>
+    <main>
+        <input type="time" id="timeInput">
+        <input type="text" id="taskInput" placeholder="Add a new task" />
+        <button id="addTask">Add Task</button>
+        <ul id="taskList"></ul>
+    </main>
+    <footer>
+        <p id="textFooter"></p>
+    </footer>
+
+    <script>
+        const timeInput = document.getElementById('timeInput');
+        const taskInput = document.getElementById('taskInput');
+        const addTaskButton = document.getElementById('addTask');
+        const taskList = document.getElementById('taskList');
+
+        // Save tasks to local storage
+        function saveTasks() {
+            const tasks = Array.from(taskList.children).map(item => {
+                const taskText = item.querySelector('.task-text').textContent; // Get task text
+                const taskTime = item.querySelector('.task-time').textContent; // Get task time
+                return { text: taskText, time: taskTime }; // Save both text and time
+            });
+            localStorage.setItem('tasks', JSON.stringify(tasks)); // Store tasks in localStorage
+        }
+
+        // Load tasks from local storage
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.sort((a, b) => a.time.localeCompare(b.time));
+            tasks.forEach(task => addTaskToDOM(task.text, task.time));
+        }
+
+        // Add task event
+        addTaskButton.onclick = () => {
+            const task = taskInput.value.trim();
+            const time = timeInput.value.trim();
+            if (task && time) {
+                addTaskToDOM((task[0].toUpperCase() + task.slice(1)), time); // Add the task with the time
+                saveTasks(); // Save to localStorage
+                taskInput.value = ''; // Clear input
+                timeInput.value = ''; // Clear time input
+                taskList.innerHTML = '';
+                loadTasks();
+            }
+        };
+
+        // Add task to DOM
+        function addTaskToDOM(taskText, taskTime) {
+            const li = document.createElement('li');
+            
+            //Create time box
+            const timeBox = document.createElement('div');
+            timeBox.textContent = taskTime;
+            timeBox.classList.add('task-time');
+            
+            //Create text box
+            const textBox = document.createElement('div');
+            textBox.textContent = taskText;
+            textBox.classList.add('task-text');
+
+            //Create remove box
+            const removeBtn = document.createElement('button');
+            removeBtn.classList.add('remove-btn');
+                //Create img remove btn
+                const imgRemoveBtn = document.createElement('img');
+                imgRemoveBtn.src = 'https://cdn3.iconfinder.com/data/icons/objects/512/Bin-512.png';
+                removeBtn.appendChild(imgRemoveBtn);
+
+            removeBtn.onclick = () => {
+                li.remove();
+                saveTasks();
+            }
+            
+            // Append elements to the li
+            li.appendChild(timeBox);
+            li.appendChild(textBox);
+            li.appendChild(removeBtn);
+            
+            // Append li to the task list
+            taskList.appendChild(li);
+        }
+
+        // Initialize
+        loadTasks(); // Load tasks when the page loads
+    </script>
+</body>
+</html>
+
+
+
